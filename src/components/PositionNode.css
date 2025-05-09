@@ -1,0 +1,26 @@
+.position-node {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0f9ff;
+    border: 1px solid #9ecaed;
+    width: 180px;
+}
+
+.position-node-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.position-node-label {
+    font-weight: bold;
+}
+
+.position-node-position {
+    font-family: monospace;
+    font-size: 12px;
+    color: #666;
+    background-color: #e9f5fe;
+    padding: 4px;
+    border-radius: 3px;
+}
