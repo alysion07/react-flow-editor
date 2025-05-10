@@ -1,5 +1,5 @@
 import React from 'react';
-import './NodePalette.css';
+import './styles/NodePalette.css';
 
 const nodeTypes = [
     { type: 'input', label: '입력 노드' },
