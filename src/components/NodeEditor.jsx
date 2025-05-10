@@ -1,9 +1,9 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect  } from 'react';
 import ReactFlow, {
     ReactFlowProvider,
     addEdge,
-    useNodesState,
-    useEdgesState,
+    applyNodeChanges,
+    applyEdgeChanges,
     Controls,
     Background,
 } from 'reactflow';
@@ -12,12 +12,12 @@ import 'reactflow/dist/style.css';
 import NodePalette from './NodePalette';
 import PositionNode from './Node.jsx'; // 커스텀 노드 임포트
 import NodeInspector from "./NodeInspector.jsx";
+import useFlowStore from './store/useFlowStore.jsx';
 import { componentTypes, componentCategories } from './ComponentsType.jsx';
 
 import './styles/NodeEditor.css';
 
-const initialNodes = [];
-const initialEdges = [];
+
 const proOptions = { hideAttribution: true };
 
 let id = 0;
@@ -30,78 +30,65 @@ const NodeEditor = () => {
         positionNode: PositionNode,
     }), []);
 
+    const store = useFlowStore();
+    const [nodes, setNodes] = useState(store.present.nodes);
+    const [edges, setEdges] = useState(store.present.edges);
     const reactFlowWrapper = useRef(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
     const [selectedNode, setSelectedNode] = useState(null);
 
-    const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges]
-    );
+    useEffect(() => {
+        setNodes(store.present.nodes);
+        setEdges(store.present.edges);
+    }, [store.present.nodes, store.present.edges]);
+
+    const handleNodesChange = useCallback((changes) => {
+        const updatedNodes = applyNodeChanges(changes, nodes);
+        setNodes(updatedNodes); // 👉 로컬 상태만 갱신
+    }, [nodes]);
+
+    const handleEdgesChange = useCallback((changes) => {
+        const updatedEdges = applyEdgeChanges(changes, edges);
+        setEdges(updatedEdges);
+    }, [nodes, edges, store]);
+
+    const handleNodeDragStop = useCallback((_, draggedNode) => {
+        const updatedNodes = nodes.map((node) =>
+            node.id === draggedNode.id ? { ...node, position: draggedNode.position } : node
+        );
+        setNodes(updatedNodes);
+        store.set(updatedNodes, edges);
+    }, [nodes, edges, store]);
+
+    const handleConnect = useCallback((connection) => {
+        const updatedEdges = addEdge(connection, edges);
+        setEdges(updatedEdges);
+        store.set(nodes, updatedEdges);
+    }, [nodes, edges, store]);
 
     const onNodeClick = useCallback((event, node) => {
         console.log('Node clicked',node );
+        store.setSelectedNodeId(node.id);
         setSelectedNode(node);
     }, []);
 
-    const onDragOver = useCallback((event) => {
+    const handleDrop = useCallback((event) => {
+        event.preventDefault();
+        const type = event.dataTransfer.getData('application/reactflow');
+        if (!type) return;
+
+        const position = reactFlowInstance.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+        });
+
+        store.dropNode(type, position);
+    }, [reactFlowInstance, store]);
+
+    const handleDragOver = useCallback((event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
     }, []);
-
-    // 노드 드래그가 끝났을 때 position 값 업데이트
-    const onNodeDragStop = useCallback((event, node) => {
-        setNodes((nds) =>
-            nds.map((n) => {
-                if (n.id === node.id) {
-                    // 노드의 현재 position 값을 xPos, yPos로 전달
-                    return {
-                        ...n,
-                        xPos: node.position.x,
-                        yPos: node.position.y,
-                    };
-                }
-                return n;
-            })
-        );
-    }, [setNodes]);
-
-    const onDrop = useCallback(
-        (event) => {
-            event.preventDefault();
-
-            const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-            const type = event.dataTransfer.getData('application/reactflow');
-
-            // 노드 타입 유효성 체크
-            if (typeof type === 'undefined' || !type) {
-                return;
-            }
-
-            const position = reactFlowInstance.screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
-
-            // 새 노드 생성 시 position 값을 xPos, yPos로도 설정
-            const newNode = {
-                id: getId(),
-                type,
-                position,
-                xPos: position.x, // 초기 x 좌표 저장
-                yPos: position.y, // 초기 y 좌표 저장
-                data: {
-                    label: `${type === 'positionNode' ? 'Position' : type}`,
-                    type: 'SNGLVOL',
-                },
-            };
-
-            setNodes((nds) => nds.concat(newNode));
-        },
-        [reactFlowInstance, setNodes]
-    );
 
     const onPaneClick = useCallback(() => {
         setSelectedNode(null);
@@ -111,23 +98,26 @@ const NodeEditor = () => {
         <div className="node-editor">
             <NodePalette />
             <ReactFlowProvider>
-                <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+                <div className="reactflow-wrapper" ref={reactFlowWrapper}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                >
+                    <button onClick={store.undo} disabled={!store.canUndo }>Undo</button>
+                    <button onClick={store.redo} disabled={!store.canRedo }>Redo</button>
                     <ReactFlow
+                        onInit={setReactFlowInstance}
+                        proOptions={proOptions}
                         nodes={nodes}
                         edges={edges}
                         nodeTypes={nodeTypes} // 커스텀 노드 타입
-                        onNodesChange={onNodesChange}
+                        onNodesChange={handleNodesChange}
                         onNodeClick={onNodeClick}
-                        onEdgesChange={onEdgesChange}
-                        onConnect={onConnect}
-                        onInit={setReactFlowInstance}
-                        onDrop={onDrop}
-                        onDragOver={onDragOver}
-                        onNodeDragStop={onNodeDragStop} // 노드 드래그 완료 이벤트 핸들러 추가
+                        onNodeDragStop={handleNodeDragStop} // 노드 드래그 완료 이벤트 핸들러 추가
+                        onEdgesChange={handleEdgesChange}
                         defaultEdgeOptions={{ type: 'smoothstep' }}
                         connectionLineType='smoothstep'
+                        onConnect={handleConnect}
                         onPaneClick={onPaneClick}
-                        proOptions={proOptions}
                     >
                         <Controls />
                         <Background />
