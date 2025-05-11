@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './../../styles/HeatStructure.css';
+import './../styles/HeatStructure.css';
 
 // 메인 애플리케이션 컴포넌트
 const HeatStructure = ({selectedNode}) => {

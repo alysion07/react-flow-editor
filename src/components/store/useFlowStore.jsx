@@ -10,8 +10,9 @@ const useFlowStore = create((set, get) => ({
     selectedNodeId: null,
     canUndo: false,
     canRedo: false,
+    dragStartNodes: null,
 
-    set: (nodes, edges = false) => {
+    set: (nodes, edges) => {
 
         const { past, present} = get();
             set({
@@ -21,7 +22,7 @@ const useFlowStore = create((set, get) => ({
                 canUndo: true,
                 canRedo: false,
             });
-
+        console.log( 'set', past.length)
     },
     undo: () => {
         const { past, present, future } = get();
@@ -49,6 +50,7 @@ const useFlowStore = create((set, get) => ({
             canUndo: true,
             canRedo: newFuture.length > 0,
         });
+        console.log(newFuture.length)
     },
     addNode: () => {
         const { present, set } = get();
@@ -64,11 +66,11 @@ const useFlowStore = create((set, get) => ({
         const { present, set } = get();
         const newNode = {
             id: `${+new Date()}`,
-            type,
+            type: 'node',
             position,
             xPos: position.x,
             yPos: position.y,
-            data: { label: type === 'positionNode' ? 'Position' : type, type: 'SNGLVOL' },
+            data: { label: type, componentType: type },
         };
         set([...present.nodes, newNode], present.edges);
     },
@@ -82,6 +84,58 @@ const useFlowStore = create((set, get) => ({
         set({ selectedNodeId: null });
     },
     setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+
+    setNodeDragStart: (event, node, nodes) => {
+        const dragPositions = {};
+
+        if (node) {
+            dragPositions[node.id] = { ...(node.position) };
+        }
+
+        set({ dragStartNodes: dragPositions });
+    },
+
+    handleNodeDragStop: (draggedNode) => {
+        const { dragStartNodes, present } = get();
+
+        if (dragStartNodes && draggedNode && dragStartNodes[draggedNode.id]) {
+            const startPosition = dragStartNodes[draggedNode.id];
+
+            if (startPosition.x !== draggedNode.position.x || startPosition.y !== draggedNode.position.y) {
+                const updatedNodes = present.nodes.map(node =>
+                    node.id === draggedNode.id ? { ...node, position: draggedNode.position } : node
+                );
+
+                // 직접 set 함수 호출
+                get().set(updatedNodes, present.edges);
+            }
+        }
+
+        // 항상 드래그 시작 상태 초기화
+        set({ dragStartNodes: null });
+    },
+
+    // 다이어그램 Import 함수 추가
+    importFlow: (flowData) => {
+        const { past, present } = get();
+
+        // 히스토리에 현재 상태 추가
+        set({
+            past: [...past, present],
+            present: {
+                nodes: flowData.nodes || [],
+                edges: flowData.edges || []
+            },
+            future: [],
+            canUndo: true,
+            canRedo: false,
+            selectedNodeId: null, // 선택 초기화
+            dragStartNodes: null, // 드래그 상태 초기화
+        });
+
+        console.log('다이어그램을 성공적으로 불러왔습니다.');
+    },
+
 }));
 
 export default useFlowStore;

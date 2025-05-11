@@ -21,11 +21,11 @@ const NodeInspector = ({ selectedNode, componentTypes, onPropertyChange }) => {
     useEffect(() => {
         if (selectedNode) {
             // 노드 데이터로 폼 초기화
-            setFormValues(selectedNode.data || {});
+            setFormValues(selectedNode.data?.value || {});
             
             // 기본 활성 탭 설정
-            const nodeType = selectedNode.data?.type;
-            const componentDef = componentTypes[nodeType];
+            const componentType = selectedNode.data?.componentType;
+            const componentDef = componentTypes[componentType];
             if (componentDef?.properties?.tabs?.length > 0) {
                 setActiveTab(componentDef.properties.tabs[0].id);
             }
@@ -49,14 +49,14 @@ const NodeInspector = ({ selectedNode, componentTypes, onPropertyChange }) => {
     }
 
     // Get component definition for the selected node
-    const nodeType = selectedNode.data?.type;
-    const componentDef = componentTypes[nodeType];
+    const componentType = selectedNode.data?.componentType;
+    const componentDef = componentTypes[componentType];
 
     // If component definition is not found, show error
     if (!componentDef) {
         return (
             <div className="node-inspector error-state">
-                <p>Component type '{nodeType}' not found in definitions</p>
+                <p>Component type '{componentType}' not found in definitions</p>
             </div>
         );
     }
@@ -79,9 +79,10 @@ const NodeInspector = ({ selectedNode, componentTypes, onPropertyChange }) => {
 
             return updatedValues;
         });
-        
+
+        //TODO 발생 오류 확인 필요 'Uncaught TypeError: onPropertyChange is not a function'
         // 상태 업데이트 후 부모 컴포넌트에 알림 (React 이벤트 핸들러 내에서 안전하게 호출)
-        // 이 시점에서 formValues는 아직 업데이트되지 않은 상태이므로 직접 값을 전달
+        // 이 시점에서 formValues는 아직 업데이트되지 않은 상태이므로 직접 값을 전
         onPropertyChange(selectedNode.id, fieldId, value);
     };
 
@@ -398,7 +399,7 @@ const NodeInspector = ({ selectedNode, componentTypes, onPropertyChange }) => {
         <div className="node-inspector">
             <div className="inspector-header">
                 <h2 className="component-title">{componentDef.label}</h2>
-                <div className="component-type">{nodeType}</div>
+                <div className="component-type">{componentType}</div>
                 <p className="component-description">{componentDef.description}</p>
 
                 {/* Component ID and Name fields */}
@@ -428,7 +429,7 @@ const NodeInspector = ({ selectedNode, componentTypes, onPropertyChange }) => {
             </div>
 
             {/* Tab navigation */}
-            {componentDef.properties.tabs.length > 0 && (
+            {componentDef.properties.tabs?.length > 0 && (
                 <div className="inspector-tabs">
                     <div className="tab-nav">
                         {componentDef.properties.tabs.map(tab => (

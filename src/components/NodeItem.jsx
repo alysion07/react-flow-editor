@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import './styles/Node.css';
+import './styles/NodeItem.css';
 
-const Node = ({ data, xPos, yPos, type }) => {
+const NodeItem = ({ data, xPos, yPos, type }) => {
     return (
         <div className="node">
             <div className="node-header">
@@ -15,7 +15,8 @@ const Node = ({ data, xPos, yPos, type }) => {
                     className="node-delete-btn"
                     onClick={(e) => {
                         e.stopPropagation();
-                        if (onDelete) onDelete();
+                        // if (onDelete) onDelete();
+                        // TODO : 삭제기능 구현 필요
                     }}
                 >
                     ×
@@ -35,4 +36,4 @@ const Node = ({ data, xPos, yPos, type }) => {
     );
 };
 
-export default memo(Node);
+export default memo(NodeItem);

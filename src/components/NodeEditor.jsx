@@ -9,13 +9,15 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import NodePalette from './NodePalette';
-import PositionNode from './Node.jsx'; // 커스텀 노드 임포트
-import NodeInspector from "./NodeInspector.jsx";
 import useFlowStore from './store/useFlowStore.jsx';
 import { componentTypes, componentCategories } from './ComponentsType.jsx';
+import NodeItem from './NodeItem.jsx'; // 커스텀 노드 임포트
+import NodePalette from './NodePalette';
+import NodeInspector from "./NodeInspector.jsx";
+import HeatStructure from "./controls/HeatStructure.jsx";
 
 import './styles/NodeEditor.css';
+import Toolbar from "./Toolbar.jsx";
 
 
 const proOptions = { hideAttribution: true };
@@ -27,7 +29,9 @@ const NodeEditor = () => {
 
     // 커스텀 노드 타입 등록
     const nodeTypes = useMemo(() => ({
-        positionNode: PositionNode,
+        node: NodeItem,
+        // pump: Node,
+
     }), []);
 
     const store = useFlowStore();
@@ -36,6 +40,8 @@ const NodeEditor = () => {
     const reactFlowWrapper = useRef(null);
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
     const [selectedNode, setSelectedNode] = useState(null);
+
+    const fileInputRef = React.useRef(null);
 
     useEffect(() => {
         setNodes(store.present.nodes);
@@ -52,13 +58,14 @@ const NodeEditor = () => {
         setEdges(updatedEdges);
     }, [nodes, edges, store]);
 
+    const handleNodeDragStart = useCallback( (event, node, nodes) => {
+        store.setNodeDragStart(event, node, nodes)
+    }, [[nodes, nodes, edges]] )
+
+// 컴포넌트에서 사용
     const handleNodeDragStop = useCallback((_, draggedNode) => {
-        const updatedNodes = nodes.map((node) =>
-            node.id === draggedNode.id ? { ...node, position: draggedNode.position } : node
-        );
-        setNodes(updatedNodes);
-        store.set(updatedNodes, edges);
-    }, [nodes, edges, store]);
+        store.handleNodeDragStop(draggedNode);
+    }, [store]);
 
     const handleConnect = useCallback((connection) => {
         const updatedEdges = addEdge(connection, edges);
@@ -67,7 +74,6 @@ const NodeEditor = () => {
     }, [nodes, edges, store]);
 
     const onNodeClick = useCallback((event, node) => {
-        console.log('Node clicked',node );
         store.setSelectedNodeId(node.id);
         setSelectedNode(node);
     }, []);
@@ -94,17 +100,111 @@ const NodeEditor = () => {
         setSelectedNode(null);
     }, [setSelectedNode]);
 
+    const renderInspector = useCallback(() => {
+        if (!selectedNode || !selectedNode.data) return null;
+
+        // 선택한 노드의 componentType 가져오기
+        const componentType = selectedNode.data.componentType;
+
+        // componentType에 따라 다른 컴포넌트 렌더링
+        switch(componentType) {
+            case "HEATSTR":
+                return (
+                    <HeatStructure
+                        selectedNode={selectedNode}
+                    />
+                );
+            case "SNGLVOL":
+            case "TMDPVOL":
+            case "SNGLJUC":
+            case "TMDPJUN":
+            case "PIPE":
+            case "PUMP":
+                return (
+                    <NodeInspector
+                        selectedNode={selectedNode}
+                        componentTypes={componentTypes}
+                        onPropertyChange={() => {console.log( 'todo onPropertyChange ')}}
+                    />
+                );
+            default:
+                console.log("Unknown component type:", componentType);
+                return (
+                    <div className="inspector-placeholder">
+                        <h3>선택한 노드: {selectedNode.data.label}</h3>
+                        <p>컴포넌트 타입: {componentType || "없음"}</p>
+                    </div>
+                );
+        }
+    }, [selectedNode, componentTypes]);
+
+    // Import 핸들러
+    const handleImport = useCallback(() => {
+        // 숨겨진 파일 입력 요소 클릭 트리거
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleExport = useCallback(() => {
+        if (reactFlowInstance) {
+            const flowData = reactFlowInstance.toObject();
+            const jsonString = JSON.stringify(flowData, null, 2);
+
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'flow-diagram.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }, [reactFlowInstance]);
+
+    // 파일 변경 이벤트 처리
+    const handleFileChange = useCallback((event) => {
+        const fileReader = new FileReader();
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        fileReader.onload = (e) => {
+            try {
+                const flowData = JSON.parse(e.target.result);
+
+                // 유효성 검사
+                if (flowData && flowData.nodes && flowData.edges) {
+                    // 스토어의 importFlow 함수 호출
+                    store.importFlow(flowData);
+
+                    // ReactFlow 화면 중앙 맞추기
+                    setTimeout(() => {
+                        reactFlowInstance?.fitView({ padding: 0.1 });
+                    }, 50);
+                } else {
+                    alert('유효하지 않은 다이어그램 파일입니다.');
+                }
+            } catch (error) {
+                console.error('파일 파싱 중 오류 발생:', error);
+                alert('파일을 불러오는 중 오류가 발생했습니다.');
+            }
+        };
+
+        fileReader.readAsText(file);
+        event.target.value = null;
+    }, [store, reactFlowInstance]);
+
     return (
         <div className="node-editor">
-            <NodePalette />
+
+            <NodePalette componentsType={componentTypes} />
             <ReactFlowProvider>
+
+
                 <div className="reactflow-wrapper" ref={reactFlowWrapper}
                         onDrop={handleDrop}
-                        onDragOver={handleDragOver}
                 >
-                    <button onClick={store.undo} disabled={!store.canUndo }>Undo</button>
-                    <button onClick={store.redo} disabled={!store.canRedo }>Redo</button>
                     <ReactFlow
+                        onDragOver={handleDragOver}
                         onInit={setReactFlowInstance}
                         proOptions={proOptions}
                         nodes={nodes}
@@ -112,6 +212,7 @@ const NodeEditor = () => {
                         nodeTypes={nodeTypes} // 커스텀 노드 타입
                         onNodesChange={handleNodesChange}
                         onNodeClick={onNodeClick}
+                        onNodeDragStart={handleNodeDragStart}
                         onNodeDragStop={handleNodeDragStop} // 노드 드래그 완료 이벤트 핸들러 추가
                         onEdgesChange={handleEdgesChange}
                         defaultEdgeOptions={{ type: 'smoothstep' }}
@@ -119,15 +220,28 @@ const NodeEditor = () => {
                         onConnect={handleConnect}
                         onPaneClick={onPaneClick}
                     >
+                        <Toolbar
+                            onUndo={store.undo}
+                            onRedo={store.redo}
+                            canUndo={store.canUndo}
+                            canRedo={store.canRedo}
+                            onImport={handleImport}
+                            onExport={handleExport}
+                        />
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".json"
+                            style={{ display: 'none' }}
+                            onChange={handleFileChange}
+                        />
                         <Controls />
                         <Background />
                     </ReactFlow>
                 </div>
-                <NodeInspector
-                     selectedNode={selectedNode}
-                     componentTypes={componentTypes}
-                    // onPropertyChange={handleNodePropertyChange}
-                />
+                <div className="right-panel">
+                    {selectedNode ? renderInspector() :  null }
+                </div>
             </ReactFlowProvider>
         </div>
     );
