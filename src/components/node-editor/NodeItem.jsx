@@ -2,6 +2,8 @@ import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import './styles/NodeItem.css';
 
+import ICO from '../../../icon/keyboard_command_key_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+
 const NodeItem = ({ data, xPos, yPos, type }) => {
     return (
         <div className="node">

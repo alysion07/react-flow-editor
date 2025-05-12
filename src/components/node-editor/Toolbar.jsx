@@ -68,6 +68,7 @@ const Toolbar = ({
                      onImport,
                      onGeneralSetting,
                      onSimplify,
+                     isSimplified,
                      projectName,
                      onProjectNameChange,
                      onFileChange,
@@ -106,7 +107,7 @@ const Toolbar = ({
             </div>
             <div className="toolbar-divider"></div>
             <button className="toolbar-button"  style={{width: 'auto', }} onClick={onSimplify} title="Simplify">
-                <i className="fas fa-compress-arrows-alt"></i>
+                <i className= { isSimplified ? "fas fa-expand-arrows-alt" :"fas fa-compress-arrows-alt" } ></i>
             </button>
             <div className="toolbar-divider"></div>
 

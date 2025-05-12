@@ -7,7 +7,6 @@ import ReactFlow, {
     Controls,
     Background,
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 
 import useFlowStore from '../store/useFlowStore.jsx';
 import { componentTypes } from './ComponentsType.jsx';
@@ -22,6 +21,8 @@ import NodeInspector from "./NodeInspector.jsx";
 import Toolbar from "./Toolbar.jsx";
 import GeneralSettingPane from "./GeneralSettingPane.jsx";
 
+import ICO from '../../../icon/keyboard_command_key_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import 'reactflow/dist/style.css';
 import './styles/NodeEditor.css';
 
 const proOptions = { hideAttribution: true };
@@ -45,10 +46,26 @@ const NodeEditor = () => {
 
     const fileInputRef = React.useRef(null);
 
+    // useEffect(() => {
+    //     setNodes(store.present.nodes);
+    //     setEdges(store.present.edges);
+    // }, [store.present.nodes, store.present.edges]);
+
     useEffect(() => {
-        setNodes(store.present.nodes);
+        if (isSimplified) {
+            setNodes(store.present.nodes.map(node => ({
+                ...node,
+                type: 'simple',
+                data: { ...node.data, icon: node.data.icon }
+            })));
+        } else {
+            setNodes(store.present.nodes.map(node => ({
+                ...node,
+                type: 'node'
+            })));
+        }
         setEdges(store.present.edges);
-    }, [store.present.nodes, store.present.edges]);
+    }, [store.present.nodes, store.present.edges, isSimplified]);
 
     const handleNodesChange = useCallback((changes) => {
         const updatedNodes = applyNodeChanges(changes, nodes);
@@ -202,23 +219,9 @@ const NodeEditor = () => {
     }, [store, reactFlowInstance]);
 
     const handleSimplify = useCallback(() => {
-        setIsSimplified(!isSimplified);
-
-        console.log('handleSimplify')
-
-        // if (isSimplified) {
-        //     setNodes(store.present.nodes);
-        //     setEdges(store.present.edges);
-        // } else {
-        //     const simplifiedNodes = nodes.map(node => ({
-        //         ...node,
-        //         type: 'simple',
-        //         data: { label: node.data.label },
-        //     }));
-        //     setNodes(simplifiedNodes);
-        // }
-
-    } , [setIsSimplified]);
+        console.log('handleSimplify');
+        setIsSimplified(prev => !prev);
+    }, []);
 
 
     return (
@@ -258,6 +261,7 @@ const NodeEditor = () => {
                             onGeneralSetting={onGenSettings}
                             projectName={ 'default project' }
                             onSimplify={handleSimplify}
+                            isSimplified={isSimplified}
                         />
                         <input
                             ref={fileInputRef}
