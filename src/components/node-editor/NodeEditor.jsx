@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect  } from 'react';
+import React, {useState, useRef, useCallback, useMemo, useEffect, use} from 'react';
 import ReactFlow, {
     ReactFlowProvider,
     addEdge,
@@ -11,27 +11,27 @@ import 'reactflow/dist/style.css';
 
 import useFlowStore from '../store/useFlowStore.jsx';
 import { componentTypes } from './ComponentsType.jsx';
-import NodeItem from './NodeItem.jsx'; // 커스텀 노드 임포트
+
 import NodePalette from './NodePalette.jsx';
-import NodeInspector from "./NodeInspector.jsx";
+
+import NodeItem from './NodeItem.jsx';
+import {SimplifiedNode} from "./simpleNode.jsx";
 import HeatStructure from "./controls/HeatStructure.jsx";
 
-import './styles/NodeEditor.css';
+import NodeInspector from "./NodeInspector.jsx";
 import Toolbar from "./Toolbar.jsx";
 import GeneralSettingPane from "./GeneralSettingPane.jsx";
 
+import './styles/NodeEditor.css';
 
 const proOptions = { hideAttribution: true };
-
-let id = 0;
-const getId = () => `node_${id++}`;
 
 const NodeEditor = () => {
 
     // 커스텀 노드 타입 등록
     const nodeTypes = useMemo(() => ({
         node: NodeItem,
-        // pump: Node,
+        simple: SimplifiedNode,
 
     }), []);
 
@@ -41,6 +41,7 @@ const NodeEditor = () => {
     const reactFlowWrapper = useRef(null);
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
     const [selectedNode, setSelectedNode] = useState(null);
+    const [isSimplified, setIsSimplified] = useState(false);
 
     const fileInputRef = React.useRef(null);
 
@@ -200,6 +201,26 @@ const NodeEditor = () => {
         event.target.value = null;
     }, [store, reactFlowInstance]);
 
+    const handleSimplify = useCallback(() => {
+        setIsSimplified(!isSimplified);
+
+        console.log('handleSimplify')
+
+        // if (isSimplified) {
+        //     setNodes(store.present.nodes);
+        //     setEdges(store.present.edges);
+        // } else {
+        //     const simplifiedNodes = nodes.map(node => ({
+        //         ...node,
+        //         type: 'simple',
+        //         data: { label: node.data.label },
+        //     }));
+        //     setNodes(simplifiedNodes);
+        // }
+
+    } , [setIsSimplified]);
+
+
     return (
         <div className="node-editor">
 
@@ -235,6 +256,8 @@ const NodeEditor = () => {
                             onImport={handleImport}
                             onExport={handleExport}
                             onGeneralSetting={onGenSettings}
+                            projectName={ 'default project' }
+                            onSimplify={handleSimplify}
                         />
                         <input
                             ref={fileInputRef}

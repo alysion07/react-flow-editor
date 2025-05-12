@@ -84,135 +84,139 @@ export default function GeneralSettingPane() {
     };
 
     return (
+
         <form onSubmit={handleSubmit} className="mars-input-container">
-            <h1 className="title">Input Setting </h1>
-            <div className="tabs">
-                <button type="button" onClick={() => setActiveTab('general')} className={`tab-button ${activeTab==='general'?'tab-active':''}`}>General</button>
-                <button type="button" onClick={() => setActiveTab('advanced')} className={`tab-button ${activeTab==='advanced'?'tab-active':''}`}>Advanced</button>
+            <div className="header-container" >
+                <h1 className="title">Input Setting </h1>
             </div>
-
-            {activeTab === 'general' && (
-                <>
-                    {/* General Controls */}
-                    <div className="form-group">
-                        <label>Option Numbers (W1–91)</label>
-                        <input type="text" value={miscOptions} onChange={e => setMiscOptions(e.target.value)} placeholder="e.g. 1, -4, 8" className="input" />
+                <div className = "container-body">
+                    <div className="tabs">
+                        <button type="button" onClick={() => setActiveTab('general')} className={`tab-button ${activeTab==='general'?'tab-active':''}`}>General</button>
+                        <button type="button" onClick={() => setActiveTab('advanced')} className={`tab-button ${activeTab==='advanced'?'tab-active':''}`}>Advanced</button>
                     </div>
-                    <div className="grid-4 gap">
-                        {/* Problem Type & Option */}
-                        <div>
-                            <label>Problem Type</label>
-                            <select value={problemType} onChange={e => setProblemType(e.target.value)} className="select">
-                                {PROBLEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                    {activeTab === 'general' && (
+                        <>
+                        {/* General Controls */}
+                        <div className="form-group">
+                            <label>Option Numbers (W1–91)</label>
+                            <input type="text" value={miscOptions} onChange={e => setMiscOptions(e.target.value)} placeholder="e.g. 1, -4, 8" className="input" />
                         </div>
-                        <div>
-                            <label>Problem Option</label>
-                            <select value={problemOption} onChange={e => setProblemOption(e.target.value)} className="select">
-                                {PROBLEM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label>Input Check</label>
-                            <select value={inputCheck} onChange={e => setInputCheck(e.target.value)} className="select">
-                                {INPUT_CHECKS.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label>Units</label>
-                            <div className="unit-group">
-                                <select value={inputUnits} onChange={e => setInputUnits(e.target.value)} className="select">
-                                    {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                                </select>
-                                <select value={outputUnits} onChange={e => setOutputUnits(e.target.value)} className="select ml-2">
-                                    {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                        <div className="grid-4 gap">
+                            {/* Problem Type & Option */}
+                            <div>
+                                <label>Problem Type</label>
+                                <select value={problemType} onChange={e => setProblemType(e.target.value)} className="select">
+                                    {PROBLEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
                             </div>
-                        </div>
-                    </div>
-                    {/* Time Step Control */}
-                    <div className="form-group">
-                        <h2 className="section-heading">Time Step Control</h2>
-                        <div className="grid-2 gap">
-                            <input type="number" placeholder="End Time" value={endTime} onChange={e => setEndTime(e.target.value)} className="input" />
-                            <input type="number" placeholder="Min Step Time" value={minStep} onChange={e => setMinStep(e.target.value)} className="input" />
-                            <input type="number" placeholder="Max Step Time" value={maxStep} onChange={e => setMaxStep(e.target.value)} className="input" />
-                            <input type="number" placeholder="Control Option" value={controlOption} onChange={e => setControlOption(e.target.value)} className="input" />
-                            <input type="number" placeholder="Minor Edit Freq" value={minorFreq} onChange={e => setMinorFreq(e.target.value)} className="input" />
-                            <input type="number" placeholder="Major Edit Freq" value={majorFreq} onChange={e => setMajorFreq(e.target.value)} className="input" />
-                            <input type="number" placeholder="Restart Freq" value={restartFreq} onChange={e => setRestartFreq(e.target.value)} className="input" />
-                        </div>
-                    </div>
-                    {/* Noncondensable Gases */}
-                    <div className="form-group">
-                        <h2 className="section-heading">Noncondensable Gases</h2>
-                        <div className="grid-2 gap">
                             <div>
-                                {GAS_SPECIES.map(g => (
-                                    <label key={g} className="checkbox-label">
-                                        <input type="checkbox" value={g} checked={selectedGases.includes(g)} onChange={e => {
-                                            const v = e.target.value;
-                                            setSelectedGases(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
-                                        }} /> {g}
-                                    </label>
-                                ))}
+                                <label>Problem Option</label>
+                                <select value={problemOption} onChange={e => setProblemOption(e.target.value)} className="select">
+                                    {PROBLEM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                                </select>
                             </div>
                             <div>
-                                <span className="block mb-1">Fluid</span>
-                                {FLUID_OPTIONS.map(opt => (
-                                    <label key={opt} className="radio-label">
-                                        <input type="radio" name="fluid" value={opt} checked={fluid === opt} onChange={e => setFluid(e.target.value)} /> {opt}
-                                    </label>
+                                <label>Input Check</label>
+                                <select value={inputCheck} onChange={e => setInputCheck(e.target.value)} className="select">
+                                    {INPUT_CHECKS.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label>Units</label>
+                                <div className="unit-group">
+                                    <select value={inputUnits} onChange={e => setInputUnits(e.target.value)} className="select">
+                                        {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                                    </select>
+                                    <select value={outputUnits} onChange={e => setOutputUnits(e.target.value)} className="select ml-2">
+                                        {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Time Step Control */}
+                        <div className="form-group">
+                            <h2 className="section-heading">Time Step Control</h2>
+                            <div className="grid-2 gap">
+                                <input type="number" placeholder="End Time" value={endTime} onChange={e => setEndTime(e.target.value)} className="input" />
+                                <input type="number" placeholder="Min Step Time" value={minStep} onChange={e => setMinStep(e.target.value)} className="input" />
+                                <input type="number" placeholder="Max Step Time" value={maxStep} onChange={e => setMaxStep(e.target.value)} className="input" />
+                                <input type="number" placeholder="Control Option" value={controlOption} onChange={e => setControlOption(e.target.value)} className="input" />
+                                <input type="number" placeholder="Minor Edit Freq" value={minorFreq} onChange={e => setMinorFreq(e.target.value)} className="input" />
+                                <input type="number" placeholder="Major Edit Freq" value={majorFreq} onChange={e => setMajorFreq(e.target.value)} className="input" />
+                                <input type="number" placeholder="Restart Freq" value={restartFreq} onChange={e => setRestartFreq(e.target.value)} className="input" />
+                            </div>
+                        </div>
+                        {/* Noncondensable Gases */}
+                        <div className="form-group">
+                            <h2 className="section-heading">Noncondensable Gases</h2>
+                            <div className="grid-2 gap">
+                                <div>
+                                    {GAS_SPECIES.map(g => (
+                                        <label key={g} className="checkbox-label">
+                                            <input type="checkbox" value={g} checked={selectedGases.includes(g)} onChange={e => {
+                                                const v = e.target.value;
+                                                setSelectedGases(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
+                                            }} /> {g}
+                                        </label>
+                                    ))}
+                                </div>
+                                <div>
+                                    <span className="block mb-1">Fluid</span>
+                                    {FLUID_OPTIONS.map(opt => (
+                                        <label key={opt} className="radio-label">
+                                            <input type="radio" name="fluid" value={opt} checked={fluid === opt} onChange={e => setFluid(e.target.value)} /> {opt}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        {/* Has Boron Separate */}
+                        <div className="form-group">
+                            <label className="checkbox-label">
+                                <input type="checkbox" checked={hasBoron} onChange={e => setHasBoron(e.target.checked)} /> Has Boron
+                            </label>
+                        </div>
+                    </>
+                )}
+
+                {activeTab === 'advanced' && (
+                    <>
+                        {/* Developmental Model Control */}
+                        <div className="form-group">
+                            <h2 className="section-heading">Developmental Model Control (W1–91)</h2>
+                            <div className="grid-cols-5 gap overflow-scroll max-h-64">
+                                {devModel.map((val, i) => (
+                                    <div key={i} className="flex items-center">
+                                        <label className="label">W{i+1}</label>
+                                        <input type="number" value={val} onChange={e => handleDevChange(i, e.target.value)} className="input" />
+                                    </div>
                                 ))}
                             </div>
                         </div>
-                    </div>
-                    {/* Has Boron Separate */}
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input type="checkbox" checked={hasBoron} onChange={e => setHasBoron(e.target.checked)} /> Has Boron
-                        </label>
-                    </div>
-                </>
-            )}
-
-            {activeTab === 'advanced' && (
-                <>
-                    {/* Developmental Model Control */}
-                    <div className="form-group">
-                        <h2 className="section-heading">Developmental Model Control (W1–91)</h2>
-                        <div className="grid-cols-5 gap overflow-scroll max-h-64">
-                            {devModel.map((val, i) => (
-                                <div key={i} className="flex items-center">
-                                    <label className="label">W{i+1}</label>
-                                    <input type="number" value={val} onChange={e => handleDevChange(i, e.target.value)} className="input" />
-                                </div>
-                            ))}
+                        {/* Model Multipliers */}
+                        <div className="form-group">
+                            <h2 className="section-heading">Model Multipliers (Cards 10–14)</h2>
+                            <div className="grid-cols-5 gap">
+                                {[10,11,12,13,14].map(card => (
+                                    <div key={card} className="flex flex-col">
+                                        <label className="label">Card {card}</label>
+                                        <input type="number" value={multipliers[card]} onChange={e => handleMultChange(card, e.target.value)} className="input" />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    {/* Model Multipliers */}
+                    </>
+                )}
+
+                <button type="submit" className="button-generate">Generate Input File</button>
+
+                {generatedText && (
                     <div className="form-group">
-                        <h2 className="section-heading">Model Multipliers (Cards 10–14)</h2>
-                        <div className="grid-cols-5 gap">
-                            {[10,11,12,13,14].map(card => (
-                                <div key={card} className="flex flex-col">
-                                    <label className="label">Card {card}</label>
-                                    <input type="number" value={multipliers[card]} onChange={e => handleMultChange(card, e.target.value)} className="input" />
-                                </div>
-                            ))}
-                        </div>
+                        <h2 className="section-heading">Generated File</h2>
+                        <pre className="output">{generatedText}</pre>
                     </div>
-                </>
-            )}
-
-            <button type="submit" className="button-generate">Generate Input File</button>
-
-            {generatedText && (
-                <div className="form-group">
-                    <h2 className="section-heading">Generated File</h2>
-                    <pre className="output">{generatedText}</pre>
-                </div>
-            )}
+                )}
+            </div>
         </form>
     );
 }

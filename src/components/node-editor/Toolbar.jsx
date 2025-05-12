@@ -1,5 +1,5 @@
 // Toolbar.jsx
-import {useRef, useCallback} from 'react';
+import {useRef, useState, useEffect, useCallback} from 'react';
 import './styles/Toolbar.css';
 
 const FileUploader = () => {
@@ -67,8 +67,34 @@ const Toolbar = ({
                      onExport,
                      onImport,
                      onGeneralSetting,
+                     onSimplify,
+                     projectName,
+                     onProjectNameChange,
                      onFileChange,
                  }) => {
+
+    const [isEditing, setIsEditing] = useState(false);
+    const inputRef = useRef(null);
+
+    const handleProjectNameClick = () => {
+        setIsEditing(true);
+    };
+
+    const handleProjectNameBlur = () => {
+        setIsEditing(false);
+    };
+
+    const handleProjectNameKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            setIsEditing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isEditing]);
 
     return (
         <div className="editor-toolbar" >
@@ -78,6 +104,10 @@ const Toolbar = ({
                 </button>
 
             </div>
+            <div className="toolbar-divider"></div>
+            <button className="toolbar-button"  style={{width: 'auto', }} onClick={onSimplify} title="Simplify">
+                <i className="fas fa-compress-arrows-alt"></i>
+            </button>
             <div className="toolbar-divider"></div>
 
             <div className="toolbar-group">
@@ -90,6 +120,22 @@ const Toolbar = ({
             </div>
 
             <div className="toolbar-divider"></div>
+
+            <div className="toolbar-section project-name">
+                 {isEditing ? (
+                     <input
+                         ref={inputRef}
+                         type="text"
+                         value={projectName}
+                         onChange={(e) => onProjectNameChange(e.target.value)}
+                         onBlur={handleProjectNameBlur}
+                         onKeyDown={handleProjectNameKeyDown}
+                         className="project-name-input"
+                     />
+                 ) : (
+                     <h5 onClick={handleProjectNameClick}>{projectName}</h5>
+                 )}
+             </div>
 
             <div className="toolbar-right">
                 <div className="toolbar-group">
@@ -112,131 +158,3 @@ const Toolbar = ({
 };
 
 export default Toolbar;
-
-
-// import './styles/Toolbar.css';
-// // import {useNavigate} from "react-router-dom";
-// // import {uploadToMinio} from "../services/minioService";
-//
-// const Toolbar = ({
-//                      onMousePosition,
-//                      onUndo,
-//                      onRedo,
-//                      canUndo,
-//                      canRedo,
-//                      onSave,
-//                      onLoad,
-//                      onGenerateInput,
-//                      projectName,
-//                      onProjectNameChange
-//                  }) => {
-//     const [isEditing, setIsEditing] = React.useState(false);
-//     const inputRef = React.useRef(null);
-//
-//     const handleProjectNameClick = () => {
-//         setIsEditing(true);
-//     };
-//
-//     const handleProjectNameBlur = () => {
-//         setIsEditing(false);
-//     };
-//
-//     const handleProjectNameKeyDown = (e) => {
-//         if (e.key === 'Enter') {
-//             setIsEditing(false);
-//         }
-//     };
-//     React.useEffect(() => {
-//         if (isEditing && inputRef.current) {
-//             inputRef.current.focus();
-//         }
-//     }, [isEditing]);
-//
-//     // Hidden file input for load functionality
-//     const fileInputRef = React.useRef(null);
-//     const handleLoadClick = () => {
-//         fileInputRef.current.click();
-//     };
-//
-//     return (
-//         <div className="toolbar">
-//             <button
-//                 className="toolbar-button"
-//                 title={"Undo (Ctrl+Z)"}
-//             >
-//             </button>
-//             <div className="toolbar-section project-name">
-//                 {isEditing ? (
-//                     <input
-//                         ref={inputRef}
-//                         type="text"
-//                         value={projectName}
-//                         onChange={(e) => onProjectNameChange(e.target.value)}
-//                         onBlur={handleProjectNameBlur}
-//                         onKeyDown={handleProjectNameKeyDown}
-//                         className="project-name-input"
-//                     />
-//                 ) : (
-//                     <h1 onClick={handleProjectNameClick}>{projectName}</h1>
-//                 )}
-//             </div>
-//
-//             <div className="toolbar-section toolbar-actions">
-//                 <button
-//                     className="toolbar-button"
-//                     onClick={onUndo}
-//                     disabled={!canUndo}
-//                     title="Undo (Ctrl+Z)"
-//                 >
-//                     ↩️ Undo
-//                 </button>
-//
-//                 <button
-//                     className="toolbar-button"
-//                     onClick={onRedo}
-//                     disabled={!canRedo}
-//                     title="Redo (Ctrl+Y)"
-//                 >
-//                     ↪️ Redo
-//                 </button>
-//
-//                 <button
-//                     className="toolbar-button"
-//                     onClick={onSave}
-//                     title="Save Project"
-//                 >
-//                     💾 Save
-//                 </button>
-//
-//                 <button
-//                     className="toolbar-button"
-//                     onClick={handleLoadClick}
-//                     title="Load Project"
-//                 >
-//                     📂 Load
-//                 </button>
-//
-//                 {/*<button*/}
-//                 {/*    className="toolbar-button"*/}
-//                 {/*    // onClick={onGenerateInput}*/}
-//                 {/*    title="Generate Input File"*/}
-//                 {/*>*/}
-//                 {/*    📝 Generate Input*/}
-//                 {/*</button>*/}
-//
-//                 <FileUploader/>
-//                 <input
-//                     ref={fileInputRef}
-//                     type="file"
-//                     accept=".json"
-//                     style={{ display: 'none' }}
-//                     onChange={onLoad}
-//                 />
-//             </div>
-//         </div>
-//     );
-// };
-//
-// export default Toolbar;
-//
-//
