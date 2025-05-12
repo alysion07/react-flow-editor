@@ -23,11 +23,11 @@ const NodePalette = ({componentsType}) => {
 
     return (
         <aside className="node-palette">
-            <div className="palette-header">노드 팔레트</div>
+            <div className="palette-header">Components</div>
             <div className="palette-nodes">
                 {Object.entries(nodeTypes).map(([category, items]) => (
                     <div key={category} className="palette-category">
-                        <h3 className="category-title">{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+                        <h4 className="category-title">{category.charAt(0).toUpperCase() + category.slice(1)}</h4>
                         <div className="palette-items">
                             {items.map(node => (
                                 <div
