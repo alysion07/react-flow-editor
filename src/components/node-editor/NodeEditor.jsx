@@ -9,15 +9,16 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import useFlowStore from './store/useFlowStore.jsx';
-import { componentTypes, componentCategories } from './ComponentsType.jsx';
+import useFlowStore from '../store/useFlowStore.jsx';
+import { componentTypes } from './ComponentsType.jsx';
 import NodeItem from './NodeItem.jsx'; // 커스텀 노드 임포트
-import NodePalette from './NodePalette';
+import NodePalette from './NodePalette.jsx';
 import NodeInspector from "./NodeInspector.jsx";
 import HeatStructure from "./controls/HeatStructure.jsx";
 
 import './styles/NodeEditor.css';
 import Toolbar from "./Toolbar.jsx";
+import GeneralSettingPane from "./GeneralSettingPane.jsx";
 
 
 const proOptions = { hideAttribution: true };
@@ -78,6 +79,10 @@ const NodeEditor = () => {
         setSelectedNode(node);
     }, []);
 
+    const onGenSettings = useCallback(() => {
+        setSelectedNode({id: 'genset', type: 'GENSET', data: { label: 'Genset', componentType: 'GENSET' }});
+    }, []);
+
     const handleDrop = useCallback((event) => {
         event.preventDefault();
         const type = event.dataTransfer.getData('application/reactflow');
@@ -116,7 +121,7 @@ const NodeEditor = () => {
                 );
             case "SNGLVOL":
             case "TMDPVOL":
-            case "SNGLJUC":
+            case "SNGLJUN":
             case "TMDPJUN":
             case "PIPE":
             case "PUMP":
@@ -127,6 +132,8 @@ const NodeEditor = () => {
                         onPropertyChange={() => {console.log( 'todo onPropertyChange ')}}
                     />
                 );
+                case "GENSET":
+                    return ( <GeneralSettingPane/>);
             default:
                 console.log("Unknown component type:", componentType);
                 return (
@@ -136,7 +143,7 @@ const NodeEditor = () => {
                     </div>
                 );
         }
-    }, [selectedNode, componentTypes]);
+    }, [selectedNode]);
 
     // Import 핸들러
     const handleImport = useCallback(() => {
@@ -227,6 +234,7 @@ const NodeEditor = () => {
                             canRedo={store.canRedo}
                             onImport={handleImport}
                             onExport={handleExport}
+                            onGeneralSetting={onGenSettings}
                         />
                         <input
                             ref={fileInputRef}

@@ -1,4 +1,6 @@
+// Toolbar.jsx
 import {useRef, useCallback} from 'react';
+import './styles/Toolbar.css';
 
 const FileUploader = () => {
 
@@ -41,9 +43,10 @@ const FileUploader = () => {
     return (
         <div>
             <button className="toolbar-button"
+                    style={{width: 'auto', border : '1px solid #ccc'}}
                     onClick={handleClick}
             >
-                👉 Simulation Start
+                Simulation Start
             </button>
             <input
                 type="file"
@@ -55,9 +58,6 @@ const FileUploader = () => {
     );
 };
 
-// Toolbar.jsx
-import React from 'react';
-import './styles/Toolbar.css';
 
 const Toolbar = ({
                      onUndo,
@@ -66,11 +66,20 @@ const Toolbar = ({
                      canRedo,
                      onExport,
                      onImport,
+                     onGeneralSetting,
                      onFileChange,
                  }) => {
 
     return (
-        <div className="editor-toolbar">
+        <div className="editor-toolbar" >
+            <div className="toolbar-group">
+                <button className="toolbar-button"  style={{width: 'auto', border : '1px solid #ccc'}} onClick={onGeneralSetting} title="General Setting">
+                    Input Setting
+                </button>
+
+            </div>
+            <div className="toolbar-divider"></div>
+
             <div className="toolbar-group">
                 <button className="toolbar-button" onClick={onUndo} disabled={!canUndo} title="실행 취소">
                     <i className="fas fa-undo"></i>
@@ -90,11 +99,14 @@ const Toolbar = ({
                     <button className="toolbar-button" onClick={onExport} title="내보내기">
                         <i className="fas fa-download"></i>
                     </button>
-
-                    <FileUploader/>
-
                 </div>
+
+
             </div>
+            <div className="toolbar-divider"></div>
+
+            <FileUploader/>
+
         </div>
     );
 };
