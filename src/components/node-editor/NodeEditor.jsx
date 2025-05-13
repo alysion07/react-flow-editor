@@ -291,7 +291,7 @@ const NodeEditor = () => {
 
         // componentType에 따라 다른 컴포넌트 렌더링
         switch(componentType) {
-            case "HEATSTR":
+            case "HTSTR":
                 return (
                     <HeatStructure
                         selectedNode={selectedNode}

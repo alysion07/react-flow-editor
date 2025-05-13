@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40" viewBox="0 0 100 40">
+  <!-- 왼쪽 삼각형 -->
+  <polygon points="10,5 10,35 50,20" fill="none" stroke="black" stroke-width="3"></polygon>
+  <!-- 오른쪽 삼각형 -->
+  <polygon points="90,5 90,35 50,20" fill="none" stroke="black" stroke-width="3"></polygon>
+</svg>

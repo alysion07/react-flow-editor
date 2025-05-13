@@ -11,13 +11,15 @@ export function SimplifiedNode({ data }) {
         const type = data.componentType;
         switch (type) {
             case 'node':
-                return '/assets/icons/node.svg';
+                return '/assets/icons/pump.svg';
             case 'simple':
-                return '/assets/icons/simple.svg';
-            case 'MERGED_PJP':
-                return '/assets/icons/simple.svg';
-            default:
                 return ICO;
+            case 'MERGED_PJP':
+                return '/assets/icons/pump.svg';
+            default:
+                return "../../../icon/pump.svg";
+
+
         }
     }
     const getSimpleLabel = () => {
