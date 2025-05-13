@@ -50,3 +50,73 @@
     font-weight: bold;
 }
 
+/* Node type-specific styles */
+.node-header-SNGLVOL {
+    border-color: #76c2f6;
+}
+
+.node-header-SNGLVOL .node-header {
+    background-color: #76c2f6;
+}
+.node-header-TMDPJUN {
+    border-color: #3498db;
+}
+
+.node-header-TMDPJUN .node-header {
+    background-color: #3498db;
+}
+
+.node-header-TMDPVOL {
+    border-color: #2ecc71;
+}
+
+.node-header-TMDPVOL .node-header {
+    background-color: #2ecc71;
+}
+
+.node-header-HEATSTR {
+    border-color: #e74c3c;
+}
+
+.node-header-HEATSTR .node-header {
+    background-color: #e74c3c;
+}
+
+.node-header-reactor_core {
+    border-color: #9b59b6;
+}
+
+.node-header-reactor_core .node-header {
+    background-color: #9b59b6;
+}
+
+.node-header-heat_exchanger {
+    border-color: #f39c12;
+}
+
+.node-header-heat_exchanger .node-header {
+    background-color: #f39c12;
+}
+
+.node-header-pressurizer {
+    border-color: #16a085;
+}
+
+.node-header-pressurizer .node-header {
+    background-color: #16a085;
+}
+.node-header-PIPE {
+    border-color: #3ce7d3;
+}
+
+.node-header-PIPE .node-header {
+    background-color: #3ce7d3;
+}
+
+.node-header-PUMP {
+    border-color: #9a3ce7;
+}
+
+.node-header-PUMP .node-header {
+    background-color: #9a3ce7;
+}
