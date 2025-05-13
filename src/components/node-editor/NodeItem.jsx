@@ -4,7 +4,7 @@ import './styles/NodeItem.css';
 
 import ICO from '../../../icon/keyboard_command_key_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 
-const NodeItem = ({ data, xPos, yPos, type }) => {
+const NodeItem = ({ data, xPos, yPos, type, onDelete }) => {
     return (
         <div className="node">
             <div className="node-header">
@@ -17,7 +17,7 @@ const NodeItem = ({ data, xPos, yPos, type }) => {
                     className="node-delete-btn"
                     onClick={(e) => {
                         e.stopPropagation();
-                        // if (onDelete) onDelete();
+                         if (onDelete) onDelete();
                         // TODO : 삭제기능 구현 필요
                     }}
                 >

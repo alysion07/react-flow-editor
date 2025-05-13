@@ -1,4 +1,3 @@
-
 import { Handle, Position } from 'reactflow';
 import React from "react";
 import ICO from "../../../icon/keyboard_command_key_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg";
@@ -14,6 +13,8 @@ export function SimplifiedNode({ data }) {
             case 'node':
                 return '/assets/icons/node.svg';
             case 'simple':
+                return '/assets/icons/simple.svg';
+            case 'MERGED_PJP':
                 return '/assets/icons/simple.svg';
             default:
                 return ICO;
@@ -34,6 +35,8 @@ export function SimplifiedNode({ data }) {
                 return 'P';
             case "PUMP":
                 return '';
+            case "MERGED_PJP":
+                return 'PJP';
             default:
                 return '';
         }

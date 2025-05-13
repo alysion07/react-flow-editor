@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback, useMemo, useEffect, use} from 'react';
+import React, {useState, useRef, useCallback, useMemo, useEffect} from 'react';
 import ReactFlow, {
     ReactFlowProvider,
     addEdge,
@@ -46,25 +46,185 @@ const NodeEditor = () => {
 
     const fileInputRef = React.useRef(null);
 
-    // useEffect(() => {
-    //     setNodes(store.present.nodes);
-    //     setEdges(store.present.edges);
-    // }, [store.present.nodes, store.present.edges]);
+    const simplifyNodesAndEdges = (nodes, edges) => {
+                // 1. 노드와 엣지를 맵으로 변환
+                const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+                const inEdges = {};
+                const outEdges = {};
+                edges.forEach(e => {
+                    if (!outEdges[e.source]) outEdges[e.source] = [];
+                    if (!inEdges[e.target]) inEdges[e.target] = [];
+                    outEdges[e.source].push(e);
+                    inEdges[e.target].push(e);
+                });
+
+                // 2. 패턴 식별 및 연속 패턴 그룹화
+                const patterns = [];
+
+                // JUNCTION 노드 검사
+                nodes.forEach(junc => {
+                    if (
+                        (junc.data.componentType === "SNGLJUN" || junc.data.componentType === "TMDPJUN") &&
+                        inEdges[junc.id] && inEdges[junc.id].length === 1 &&
+                        outEdges[junc.id] && outEdges[junc.id].length === 1
+                    ) {
+                        const inEdge = inEdges[junc.id][0];
+                        const outEdge = outEdges[junc.id][0];
+                        const inNode = nodeMap[inEdge.source];
+                        const outNode = nodeMap[outEdge.target];
+
+                        if (
+                            inNode && outNode &&
+                            inNode.data.componentType === "PIPE" &&
+                            outNode.data.componentType === "PIPE"
+                        ) {
+                            // 패턴 추가
+                            patterns.push({
+                                inNode,
+                                junction: junc,
+                                outNode
+                            });
+                        }
+                    }
+                });
+
+                // 3. 연속 패턴 식별
+                // outNode가 다른 패턴의 inNode인 경우 연결
+                const patternGroups = [];
+                const processedPatterns = new Set();
+
+                // 각 패턴에 대해
+                patterns.forEach(pattern => {
+                    // 이미 처리된 패턴은 건너뜀
+                    if (processedPatterns.has(pattern)) return;
+
+                    // 새 그룹 시작
+                    const group = [pattern];
+                    processedPatterns.add(pattern);
+
+                    // 이 패턴의 outNode가 다른 패턴의 inNode인 패턴 찾기
+                    let currentPattern = pattern;
+
+                    // 연결된 다음 패턴 찾기
+                    let foundNext = true;
+                    while (foundNext) {
+                        foundNext = false;
+
+                        // 현재 패턴의 outNode가 다른 패턴의 inNode인 패턴 찾기
+                        for (const nextPattern of patterns) {
+                            if (
+                                !processedPatterns.has(nextPattern) &&
+                                currentPattern.outNode.id === nextPattern.inNode.id
+                            ) {
+                                // 연결된 패턴 발견
+                                group.push(nextPattern);
+                                processedPatterns.add(nextPattern);
+                                currentPattern = nextPattern;
+                                foundNext = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    patternGroups.push(group);
+                });
+
+                // 4. 그룹별 병합
+                const merged = new Set();
+                const newNodes = [];
+                const newEdges = [];
+                let mergeCount = 0;
+
+                patternGroups.forEach(group => {
+                    // 그룹에 포함된 모든 노드 수집
+                    const allGroupNodes = [];
+                    group.forEach(pattern => {
+                        allGroupNodes.push(pattern.inNode);
+                        allGroupNodes.push(pattern.junction);
+                        // 마지막 패턴의 outNode만 추가 (중복 방지)
+                        if (pattern === group[group.length - 1]) {
+                            allGroupNodes.push(pattern.outNode);
+                        }
+                    });
+
+                    // 병합 노드 생성
+                    const mergedNode = {
+                        id: `merged_${mergeCount++}`,
+                        type: 'simple',
+                        // 그룹의 중앙 노드 위치 사용
+                        position: group[Math.floor(group.length / 2)].junction.position,
+                        data: {
+                            label: group.length > 1 ? `Multi-P-J-P` : 'P-J-P',
+                            componentType: 'MERGED_PJP',
+                            mergedNodes: allGroupNodes.map(n => n.id),
+                            originalNodes: allGroupNodes.map(n => ({ ...n })),
+                            patternCount: group.length
+                        }
+                    };
+
+                    newNodes.push(mergedNode);
+
+                    // 모든 노드를 병합 처리
+                    allGroupNodes.forEach(node => merged.add(node.id));
+
+                    // 연결 업데이트
+                    // 첫 번째 inNode의 입력
+                    const firstInNode = group[0].inNode;
+                    if (inEdges[firstInNode.id]) {
+                        inEdges[firstInNode.id].forEach(e => {
+                            if (!merged.has(e.source)) {
+                                newEdges.push({
+                                    ...e,
+                                    target: mergedNode.id
+                                });
+                            }
+                        });
+                    }
+
+                    // 마지막 outNode의 출력
+                    const lastOutNode = group[group.length - 1].outNode;
+                    if (outEdges[lastOutNode.id]) {
+                        outEdges[lastOutNode.id].forEach(e => {
+                            if (!merged.has(e.target)) {
+                                newEdges.push({
+                                    ...e,
+                                    source: mergedNode.id
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // 병합되지 않은 노드/엣지 추가
+                nodes.forEach(n => {
+                    if (!merged.has(n.id)) newNodes.push(n);
+                });
+                edges.forEach(e => {
+                    if (!merged.has(e.source) && !merged.has(e.target)) {
+                        newEdges.push(e);
+                    }
+                });
+
+                return { nodes: newNodes, edges: newEdges };
+            };
 
     useEffect(() => {
         if (isSimplified) {
-            setNodes(store.present.nodes.map(node => ({
+            // 간소화 모드: PIPE-JUNCTION-PIPE 병합
+            const { nodes: simpNodes, edges: simpEdges } = simplifyNodesAndEdges(store.present.nodes, store.present.edges);
+            setNodes(simpNodes.map(node => ({
                 ...node,
                 type: 'simple',
                 data: { ...node.data, icon: node.data.icon }
             })));
+            setEdges(simpEdges);
         } else {
             setNodes(store.present.nodes.map(node => ({
                 ...node,
                 type: 'node'
             })));
+            setEdges(store.present.edges);
         }
-        setEdges(store.present.edges);
     }, [store.present.nodes, store.present.edges, isSimplified]);
 
     const handleNodesChange = useCallback((changes) => {
