@@ -1,10 +1,16 @@
-import { Handle, Position } from 'reactflow';
+import { useCallback, useEffect } from 'react';
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import React from "react";
 import ICO from "../../../icon/keyboard_command_key_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg";
 
 import './styles/SimpleNode.css';
 
-export function SimplifiedNode({ data }) {
+export function SimplifiedNode({ id, data }) {
+    const updateNodeInternals = useUpdateNodeInternals();
+
+    useEffect(() => {
+        updateNodeInternals(id);
+    }, [id, data, updateNodeInternals]);
 
     // data.componentType에 따라 아이콘을 다르게 설정함
     const getIcon = () => {
@@ -43,9 +49,20 @@ export function SimplifiedNode({ data }) {
                 return '';
         }
     }
+    const getStyle = useCallback(() => {
+        const type = data.componentType;
+        return {
+            backgroundColor: type === 'SNGLVOL' ? '#E3F2FD' : '#fff',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            padding: '4px',
+            width: '200px',
+            height: '200px',
+        };
+    }, [data.componentType]);
 
     return (
-        <div className="simple-node-container">
+        <div className="simple-node-container" style={getStyle()}>
             <div className="simple-node-body">
                 <Handle type="target" position={Position.Top}/>
                 <img src={getIcon()} alt=""  />
