@@ -1,14 +1,1 @@
-<svg viewBox="0 0 100 100"  width="30" height="30"  xmlns="http://www.w3.org/2000/svg">
-    <path
-        d=
-        "M 25,25
-       L 25,25
-       L 75,25
-       L 75,55
-       L 55,55
-       A 25,25 0 1 1 25,25
-       Z"
-            fill="none"
-            stroke="#000000"
-            stroke-width="5" />
-</svg>
+<svg viewBox="0 0 518 422" width="518" height="422" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><g transform="translate(-1784 -697)"><path d="M1995.47 713.5 2285.5 713.5 2285.5 908 2190.44 908C2190.44 1015.42 2103.15 1102.5 1995.47 1102.5 1887.79 1102.5 1800.5 1015.42 1800.5 908 1800.5 800.581 1887.79 713.5 1995.47 713.5Z" stroke="#042433" stroke-width="33.2292" stroke-miterlimit="8" fill="none" fill-rule="evenodd"/></g></svg>

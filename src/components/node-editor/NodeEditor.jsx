@@ -32,8 +32,7 @@ const NodeEditor = () => {
     // 커스텀 노드 타입 등록
     const nodeTypes = useMemo(() => ({
         node: NodeItem,
-        simple: SimplifiedNode,
-
+        simple: (props) => <SimplifiedNode {...props} />
     }), []);
 
     const store = useFlowStore();
